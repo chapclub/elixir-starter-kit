@@ -1,0 +1,25 @@
+FROM elixir:latest
+
+RUN mix local.hex --force
+
+RUN mix archive.install https://github.com/phoenixframework/archives/raw/master/phoenix_new.ez --force
+
+RUN curl -sL https://deb.nodesource.com/setup_6.x -o nodesource_setup.sh
+RUN bash nodesource_setup.sh
+RUN apt-get install nodejs
+
+RUN mkdir /var/app
+COPY . /var/app
+
+WORKDIR /var/app
+
+RUN mix local.rebar
+RUN mix deps.get
+
+WORKDIR /var/app/assets
+RUN npm install
+RUN node node_modules/brunch/bin/brunch build
+
+WORKDIR /var/app
+
+CMD mix phx.server
